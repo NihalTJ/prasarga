@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prasarga — AI Video Studio</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+<!-- ─── Header ─────────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-content">
+    <div class="logo">🎬 Prasarga <span class="badge-version">AI Video Studio</span></div>
+    <div id="status-badges" class="status-badges"></div>
+  </div>
+</header>
+
+<!-- ─── Tab Navigation ─────────────────────────────────────────────── -->
+<nav class="tab-nav">
+  <div class="tab-nav-inner">      <button class="tab-btn active" data-tab="discover">🔍 Discover</button>
+      <button class="tab-btn" data-tab="create">🎨 Create</button>
+    <button class="tab-btn" data-tab="enhance">⚡ Enhance & Score</button>
+    <button class="tab-btn" data-tab="earnings">💰 Earnings</button>
+    <button class="tab-btn" data-tab="strategy">📋 Strategy</button>
+    <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
+  </div>
+</nav>
+
+<main class="container">
+
+  <!-- ═══ TAB: DISCOVER ═════════════════════════════════════════════ -->
+  <div class="tab-content active" id="tab-discover">
+    <section class="card">
+      <h2>🔍 What Should I Create Today?</h2>
+      <p class="card-subtitle">The app decides what to create — viral-worthy science, physics, chemistry, nature, and satisfying phenomena videos. Each idea comes with an optimized prompt, physics constraints, platform recommendation, and earning potential.</p>
+
+      <div class="discover-controls">
+        <button id="btn-random-idea" class="btn btn-primary">🎲 Surprise Me</button>
+        <button id="btn-trending-ideas" class="btn btn-ghost">🔥 Trending Now</button>
+        <button id="btn-best-earning" class="btn btn-ghost">💰 Best Earning Potential</button>
+        <select id="discover-category" class="discover-category-select">
+          <option value="">All Categories</option>
+        </select>
+      </div>
+
+      <div id="discover-ideas" class="discover-ideas"></div>
+    </section>
+
+    <!-- Dynamic Idea Generator -->
+    <section class="card">
+      <h2>🧠 Generate Custom Idea</h2>
+      <p class="card-subtitle">Type any topic and the app creates a complete video idea with prompt, physics constraints, platform recommendation, and viral score. Unlimited ideas — never run out of content.</p>
+
+      <div class="form-group">
+        <label for="custom-topic">Enter any topic, concept, or phenomenon</label>
+        <input type="text" id="custom-topic" placeholder="e.g., Bernoulli's principle, electroplating, refraction of light, Battle of Plassey..." />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="custom-category">Category (optional — auto-detected if blank)</label>
+          <select id="custom-category">
+            <option value="">Auto-detect</option>
+            <option value="Physics">Physics</option>
+            <option value="NCERT Physics">NCERT Physics (Class 11-12)</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="NCERT Chemistry">NCERT Chemistry (Class 11-12)</option>
+            <option value="NCERT Maths">NCERT Maths (Class 9-12)</option>
+            <option value="NCERT Biology">NCERT Biology (Class 11-12)</option>
+            <option value="History">History / Storytelling</option>
+            <option value="Anime & Silly">Anime / Silly / Viral</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="btn-generate-custom" class="btn btn-primary">⚡ Generate Idea</button>
+      <div id="custom-idea-result" class="custom-idea-result hidden"></div>
+    </section>
+
+    <!-- NCERT Topics Browser -->
+    <section class="card">
+      <h2>📚 NCERT Chapter Topics</h2>
+      <p class="card-subtitle">Browse all NCERT Physics and Chemistry chapters. Click any chapter to generate a video idea instantly.</p>
+
+      <div class="form-group">
+        <label for="ncert-subject">Select subject</label>
+        <select id="ncert-subject">
+          <option value="physics">Physics (Class 11-12)</option>
+          <option value="chemistry">Chemistry (Class 11-12)</option>
+          <option value="maths">Maths (Class 9-12)</option>
+          <option value="biology">Biology (Class 11-12)</option>
+        </select>
+      </div>
+
+      <div id="ncert-topics-list" class="ncert-topics-list"></div>
+    </section>
+
+    <!-- Idea detail panel (hidden until an idea is clicked) -->
+    <section class="card hidden" id="idea-detail-card">
+      <div class="card-header-row">
+        <h2 id="idea-detail-title">Idea Details</h2>
+        <button id="btn-close-detail" class="btn btn-small btn-ghost">✕ Close</button>
+      </div>
+      <div id="idea-detail-content"></div>
+    </section>
+  </div>
+
+  <!-- ═══ TAB: CREATE ═════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-create">
+
+    <!-- Generate Video -->
+    <section class="card">
+      <h2>1. Generate AI Video</h2>
+
+      <div class="form-group">
+        <label for="prompt">Prompt — describe your video</label>
+        <textarea id="prompt" rows="3" placeholder="A cat surfing on a wave at sunset, cinematic, photorealistic..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="provider">AI Provider</label>
+          <select id="provider">
+            <option value="minimax">MiniMax Hailuo 02 (Fastest/Cheapest)</option>
+            <option value="kling">Kling 3.0 (Most Realistic)</option>
+            <option value="veo">Google Veo 3.1 (Best Cinematic + Audio)</option>
+            <option value="runway">Runway Gen-4.5 (Best for Brands)</option>
+            <option value="pika">Pika 2.0 (Creative Effects)</option>
+            <option value="replicate">Replicate (Multi-model)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="duration">Duration (sec)</label>
+          <select id="duration">
+            <option value="3">3</option>
+            <option value="5" selected>5</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="aspect">Aspect Ratio</label>
+          <select id="aspect">
+            <option value="9:16" selected>9:16 (Shorts/Reels)</option>
+            <option value="16:9">16:9 (Landscape)</option>
+            <option value="1:1">1:1 (Square)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="resolution">Resolution</label>
+          <select id="resolution">
+            <option value="480p">480p (Fast/Cheap)</option>
+            <option value="720p" selected>720p (Recommended)</option>
+            <option value="1080p">1080p (High Quality)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="image-url">Reference Image URL (optional — image-to-video)</label>
+        <input type="url" id="image-url" placeholder="https://example.com/image.jpg" />
+      </div>
+
+      <!-- Quick enhance toggle -->
+      <div class="form-group">
+        <label class="checkbox-row">
+          <input type="checkbox" id="auto-enhance" checked />
+          Auto-enhance prompt (adds realism keywords + hook formula)
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" id="auto-score" checked />
+          Auto-check viral score after generation
+        </label>
+      </div>
+
+      <button id="btn-generate" class="btn btn-primary">✨ Generate Video</button>
+      <div id="generate-status" class="status-msg"></div>
+
+      <!-- Provider info -->
+      <div id="provider-info" class="provider-info"></div>
+    </section>
+
+    <!-- Preview & Post -->
+    <section class="card hidden" id="preview-card">
+      <h2>2. Preview & Post to Social Media</h2>
+      <div class="preview-container">
+        <video id="video-preview" controls></video>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="post-title">Title / Caption</label>
+          <input type="text" id="post-title" placeholder="My AI Video" maxlength="100" />
+        </div>
+        <div class="form-group">
+          <label for="privacy">Privacy</label>
+          <select id="privacy">
+            <option value="public" selected>Public</option>
+            <option value="unlisted">Unlisted</option>
+            <option value="private">Private</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="post-desc">Description</label>
+        <textarea id="post-desc" rows="2" placeholder="Describe your video..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="post-tags">Tags (comma-separated)</label>
+        <input type="text" id="post-tags" placeholder="ai, video, creative, aivideo" />
+      </div>
+
+      <div class="form-group">
+        <label>Post to platforms</label>
+        <div class="platform-checks" id="platform-checks"></div>
+      </div>
+
+      <!-- Disclosure reminder -->
+      <div class="disclosure-reminder">
+        ⚠️ <strong>Remember:</strong> All platforms require AI content disclosure.
+        Label your content as AI-generated when posting.
+      </div>
+
+      <button id="btn-post" class="btn btn-primary">📤 Post to Social Media</button>
+      <div id="post-status" class="status-msg"></div>
+
+      <div class="social-os-section" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.1);">
+        <button id="btn-social-os" class="btn btn-secondary" style="background: var(--accent); color: #0a0e14;">🤖 Send to Social Media OS</button>
+        <div id="social-os-status" class="status-msg"></div>
+      </div>
+    </section>
+
+    <!-- History -->
+    <section class="card">
+      <div class="card-header-row">
+        <h2>3. History</h2>
+        <button id="btn-clear-history" class="btn btn-small btn-ghost">Clear</button>
+      </div>
+      <div id="history-list" class="history-list">
+        <p class="placeholder">No videos generated yet.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ═══ TAB: ENHANCE & SCORE ════════════════════════════════════ -->
+  <div class="tab-content" id="tab-enhance">
+
+    <section class="card">
+      <h2>Prompt Enhancer</h2>
+      <p class="card-subtitle">Transform your basic idea into a virality-optimized, realism-boosted prompt.</p>
+
+      <div class="form-group">
+        <label for="enhance-raw">Your basic prompt idea</label>
+        <textarea id="enhance-raw" rows="2" placeholder="A cat surfing on a wave"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="enhance-niche">Niche (for monetization)</label>
+          <select id="enhance-niche">
+            <option value="">Auto-detect</option>
+            <option value="finance">Finance (Highest RPM)</option>
+            <option value="tech">Tech</option>
+            <option value="education">Education</option>
+            <option value="food">Food</option>
+            <option value="travel">Travel</option>
+            <option value="nature">Nature</option>
+            <option value="lifestyle">Lifestyle</option>
+            <option value="entertainment">Entertainment</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="enhance-platform">Target Platform</label>
+          <select id="enhance-platform">
+            <option value="">All platforms</option>
+            <option value="facebook">Facebook</option>
+            <option value="youtube">YouTube Shorts</option>
+            <option value="instagram">Instagram Reels</option>
+            <option value="x">X (Twitter)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="enhance-realism">Realism Level</label>
+          <select id="enhance-realism">
+            <option value="medium">Medium</option>
+            <option value="high" selected>High</option>
+            <option value="maximum">Maximum</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="btn-enhance" class="btn btn-primary">⚡ Enhance Prompt</button>
+      <div id="enhance-result" class="enhance-result hidden"></div>
+    </section>
+
+    <section class="card">
+      <h2>Viral Score Estimator</h2>
+      <p class="card-subtitle">Check the viral potential of your prompt before generating.</p>
+
+      <div class="form-group">
+        <label for="score-prompt">Prompt to analyze</label>
+        <textarea id="score-prompt" rows="3" placeholder="Paste your enhanced prompt here..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="score-caption">Caption / Title (optional)</label>
+        <input type="text" id="score-caption" placeholder="Your video title or caption" />
+      </div>
+
+      <button id="btn-score" class="btn btn-primary">📊 Score Viral Potential</button>
+      <div id="score-result" class="score-result hidden"></div>
+    </section>
+
+  </div>
+
+  <!-- ═══ TAB: EARNINGS ══════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-earnings">
+
+    <section class="card">
+      <h2>Monetization Calculator</h2>
+      <p class="card-subtitle">Estimate your monthly earnings based on views, niche, and platforms.</p>
+
+      <div class="form-group">
+        <label for="calc-niche">Your Niche</label>
+        <select id="calc-niche">
+          <option value="finance">Finance (Highest Paying)</option>
+          <option value="tech">Tech</option>
+          <option value="education">Education</option>
+          <option value="food">Food</option>
+          <option value="travel">Travel</option>
+          <option value="nature">Nature</option>
+          <option value="lifestyle">Lifestyle</option>
+          <option value="entertainment" selected>Entertainment</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="calc-followers">Current Followers</label>
+        <input type="number" id="calc-followers" value="0" min="0" />
+      </div>
+
+      <h3>Monthly Views (per platform)</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="calc-yt">YouTube Shorts</label>
+          <input type="number" id="calc-yt" value="100000" min="0" />
+        </div>
+        <div class="form-group">
+          <label for="calc-tt">Facebook</label>
+          <input type="number" id="calc-tt" value="500000" min="0" />
+        </div>
+        <div class="form-group">
+          <label for="calc-ig">Instagram</label>
+          <input type="number" id="calc-ig" value="100000" min="0" />
+        </div>
+        <div class="form-group">
+          <label for="calc-x">X (Twitter)</label>
+          <input type="number" id="calc-x" value="50000" min="0" />
+        </div>
+      </div>
+
+      <button id="btn-calculate" class="btn btn-primary">💰 Calculate Earnings</button>
+      <div id="earnings-result" class="earnings-result hidden"></div>
+    </section>
+
+    <!-- Niche RPM comparison -->
+    <section class="card">
+      <h2>Niche RPM Comparison</h2>
+      <p class="card-subtitle">Revenue per 1,000 views by niche (YouTube Shorts vs Facebook AI)</p>
+      <div id="rpm-comparison"></div>
+    </section>
+
+  </div>
+
+  <!-- ═══ TAB: STRATEGY ══════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-strategy">
+
+    <section class="card">
+      <h2>Content Strategy Guide</h2>
+      <p class="card-subtitle">Everything you need to know to grow and earn with AI videos in 2026.</p>
+      <div id="strategy-content"></div>
+    </section>
+
+    <section class="card">
+      <h2>Platform-Specific Tips</h2>
+      <div id="platform-tips-content"></div>
+    </section>
+
+    <section class="card">
+      <h2>Disclosure Rules</h2>
+      <div id="disclosure-content"></div>
+    </section>
+
+  </div>
+
+  <!-- ═══ TAB: SETTINGS ═══════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-settings">
+
+    <section class="card">
+      <h2>🤖 Social Media OS Integration</h2>
+      <p class="card-subtitle">
+        Connect to your Social Media OS platform for automated scheduling,
+        cross-platform posting, and engagement management.
+      </p>
+
+      <div id="social-os-connection" style="margin: 1rem 0; padding: 0.75rem; border-radius: 8px; background: rgba(255,255,255,0.05);">
+        <span id="social-os-indicator">⚪ Checking...</span>
+      </div>
+
+      <div class="form-group" style="margin-top: 1rem;">
+        <label>Social Media OS URL</label>
+        <input type="text" id="social-os-url" placeholder="https://your-social-os.up.railway.app" />
+        <small>The base URL where your Social Media OS is hosted.</small>
+      </div>
+
+      <div class="form-group">
+        <label>API Key (shared secret)</label>
+        <input type="password" id="social-os-api-key" placeholder="Enter the shared API key" />
+        <small>This must match the API key configured in your Social Media OS.</small>
+      </div>
+
+      <div class="form-group">
+        <label>Ingest Endpoint</label>
+        <input type="text" id="social-os-endpoint" value="/api/content/ingest" placeholder="/api/content/ingest" />
+        <small>The endpoint on Social Media OS that receives video content.</small>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="social-os-enabled" />
+          Enable Social Media OS integration
+        </label>
+      </div>
+
+      <button id="btn-test-social-os" class="btn btn-secondary" style="background: var(--accent); color: #0a0e14;">Test Connection</button>
+      <div id="social-os-test-result" class="status-msg"></div>
+
+      <div style="margin-top: 1.5rem; padding: 1rem; border-radius: 8px; background: rgba(255,255,255,0.03); border-left: 3px solid var(--accent);">
+        <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem;">📋 How Integration Works</h3>
+        <ol style="padding-left: 1.2rem; color: rgba(255,255,255,0.7); font-size: 0.85rem; line-height: 1.6;">
+          <li>Generate a video in the Create tab</li>
+          <li>Click "Send to Social Media OS"</li>
+          <li>Social Media OS receives the video URL, topic, caption, and metadata</li>
+          <li>It adapts the caption per platform (X, Instagram, YouTube, Facebook)</li>
+          <li>It schedules and posts at the optimal time for each platform</li>
+          <li>Performance data flows back to the Social Media OS dashboard</li>
+        </ol>
+        <p style="font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: 0.5rem;">
+          ⚙️ These settings are configured in your <code>.env</code> file as:<br>
+          <code>SOCIAL_OS_ENABLED=true</code><br>
+          <code>SOCIAL_OS_URL=https://your-social-os.up.railway.app</code><br>
+          <code>SOCIAL_OS_API_KEY=your-shared-secret</code><br>
+          <code>SOCIAL_OS_INGEST_ENDPOINT=/api/content/ingest</code>
+        </p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>🔐 API Keys & Configuration</h2>
+      <p class="card-subtitle">All API keys are configured via environment variables in the .env file.</p>
+      <div id="config-summary"></div>
+    </section>
+
+  </div>
+
+</main>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
