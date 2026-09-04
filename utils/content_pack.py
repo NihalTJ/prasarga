@@ -175,28 +175,88 @@ def generate_content_pack(
     if description:
         base_caption += f"\n\n{description}"
 
-    captions = {}
+    # ═══ Build writeups per platform (full content, not just captions) ═══
 
-    # YouTube caption
+    # YouTube — full description with chapters, hashtags, CTA
     yt_hashtags = " ".join(all_tags[:8])
     yt_cta = random.choice(YOUTUBE_CTA)
-    captions["youtube"] = f"{best_title}\n\n{base_caption}\n\n{yt_hashtags}\n\n{yt_cta}"
+    yt_writeup = {
+        "type": "description",
+        "title": best_title,
+        "body": base_caption,
+        "chapters": [
+            "0:00 The setup",
+            "0:03 The moment",
+            "0:07 The science explained",
+            "0:10 What to watch next",
+        ],
+        "hashtags": all_tags[:8],
+        "cta": yt_cta,
+        "full_text": f"{best_title}\n\n{base_caption}\n\n⏱️ Chapters:\n0:00 The setup\n0:03 The moment\n0:07 The science explained\n0:10 What to watch next\n\n{yt_hashtags}\n\n{yt_cta}",
+    }
 
-    # Instagram caption (longer, more hashtags, emoji-heavy)
+    # Instagram — caption + carousel text + hashtags
     ig_hashtags = " ".join(all_tags[:15])
     ig_cta = random.choice(INSTAGRAM_CTA)
-    captions["instagram"] = f"{best_title} 🎬\n\n{base_caption}\n\n.\n.\n.\n\n{ig_hashtags}\n\n{ig_cta}"
+    ig_writeup = {
+        "type": "caption_carousel",
+        "title": best_title,
+        "caption": f"{best_title} 🎬\n\n{base_caption}",
+        "carousel_slides": [
+            f"What you're seeing: {topic}",
+            f"The science: {description[:80]}..." if len(description) > 80 else f"The science: {description}",
+            f"Why it matters: This {category or 'science'} concept is everywhere in real life.",
+            "Follow for more science that makes you go 🤯",
+        ],
+        "hashtags": all_tags[:15],
+        "cta": ig_cta,
+        "full_text": f"{best_title} 🎬\n\n{base_caption}\n\n.\n.\n.\n\n{ig_hashtags}\n\n{ig_cta}",
+    }
 
-    # X caption (short, punchy, fewer hashtags)
+    # X — tweet + thread option
     x_hashtags = " ".join(all_tags[:4])
     x_cta = random.choice(X_CTA)
     x_text = best_title if len(best_title) < 100 else topic
-    captions["x"] = f"{x_text} {x_hashtags}\n\n{x_cta}"
+    x_writeup = {
+        "type": "tweet_thread",
+        "tweet": f"{x_text} {x_hashtags}\n\n{x_cta}",
+        "thread": [
+            f"{x_text} {x_hashtags}",
+            f"Here's what's happening:\n{description[:200]}" if description else f"Here's what's happening:\n{topic}",
+            f"The {category or 'science'} behind this is fascinating.\n\n{x_cta}",
+        ],
+        "hashtags": all_tags[:4],
+        "cta": x_cta,
+        "full_text": f"{x_text} {x_hashtags}\n\n{x_cta}",
+    }
 
-    # Facebook caption
+    # Facebook — post text + hashtags
     fb_hashtags = " ".join(all_tags[:6])
     fb_cta = random.choice(FACEBOOK_CTA)
-    captions["facebook"] = f"{best_title}\n\n{base_caption}\n\n{fb_hashtags}\n\n{fb_cta}"
+    fb_writeup = {
+        "type": "post",
+        "title": best_title,
+        "body": base_caption,
+        "hashtags": all_tags[:6],
+        "cta": fb_cta,
+        "full_text": f"{best_title}\n\n{base_caption}\n\n{fb_hashtags}\n\n{fb_cta}",
+    }
+
+    # Backwards-compatible captions dict (for existing frontend)
+    captions = {
+        "youtube": yt_writeup["full_text"],
+        "instagram": ig_writeup["full_text"],
+        "x": x_writeup["full_text"],
+        "facebook": fb_writeup["full_text"],
+    }
+
+    # Writeups dict (rich, structured — for Prabhara to pull and modify)
+    writeups = {
+        "youtube": yt_writeup,
+        "instagram": ig_writeup,
+        "x": x_writeup,
+        "facebook": fb_writeup,
+    }
 
     return {
         "titles": titles,
@@ -209,6 +269,12 @@ def generate_content_pack(
             "copy_paste": " ".join(all_tags),
         },
         "captions": captions,
+        "writeups": writeups,
         "hooks": hooks,
         "score_note": f"Viral score: {viral_score}/100" if viral_score else None,
+        # Prabhara contract: this content pack can be pulled via API
+        # and modified by Prabhara before posting
+        "editable": True,
+        "source": "prasarga",
+        "version": "1.0",
     }

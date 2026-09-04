@@ -841,15 +841,45 @@ async function loadContentPack(topic, category, description, tags, score) {
     html += '<div class="content-pack-section"><strong>#️⃣ Hashtags (copy-paste):</strong>';
     html += `<div class="hashtag-box" style="background:var(--bg-card);padding:8px;border-radius:8px;margin:4px 0;font-size:0.8rem;word-break:break-all;">${escapeHtml(pack.hashtags.copy_paste)}</div>`;
     html += '</div>';
-    // Platform captions
-    html += '<div class="content-pack-section"><strong>📝 Captions by Platform:</strong>';
-    Object.entries(pack.captions).forEach(([platform, caption]) => {
-      const icon = platform === 'youtube' ? '📺' : platform === 'instagram' ? '📷' : platform === 'x' ? '🐦' : '👍';
-      html += `<div style="margin:8px 0;">
-        <div style="font-weight:bold;color:var(--accent);font-size:0.85rem;">${icon} ${platform.toUpperCase()}</div>
-        <div style="background:var(--bg-card);padding:8px;border-radius:8px;font-size:0.8rem;white-space:pre-wrap;max-height:150px;overflow-y:auto;">${escapeHtml(caption)}</div>
-      </div>`;
-    });
+    // Platform writeups (rich content per platform)
+    html += '<div class="content-pack-section"><strong>📝 Writeups by Platform:</strong>';
+    if (pack.writeups) {
+      Object.entries(pack.writeups).forEach(([platform, wu]) => {
+        const icon = platform === 'youtube' ? '📺' : platform === 'instagram' ? '📷' : platform === 'x' ? '🐦' : '👍';
+        const typeLabel = wu.type ? ` (${wu.type.replace(/_/g, ' ')})` : '';
+        html += `<div style="margin:8px 0;">
+          <div style="font-weight:bold;color:var(--accent);font-size:0.85rem;">${icon} ${platform.toUpperCase()}${typeLabel}</div>`;
+        // X thread
+        if (wu.thread) {
+          wu.thread.forEach((tweet, i) => {
+            html += `<div style="background:var(--bg-card);padding:6px 8px;border-radius:6px;margin:4px 0;font-size:0.8rem;white-space:pre-wrap;"><strong>${i+1}/${wu.thread.length}:</strong> ${escapeHtml(tweet)}</div>`;
+          });
+        }
+        // YouTube chapters
+        if (wu.chapters) {
+          html += '<div style="font-size:0.8rem;margin:4px 0;">⏱️ Chapters:</div><ul style="font-size:0.8rem;">';
+          wu.chapters.forEach(ch => { html += `<li>${escapeHtml(ch)}</li>`; });
+          html += '</ul>';
+        }
+        // Instagram carousel
+        if (wu.carousel_slides) {
+          html += '<div style="font-size:0.8rem;margin:4px 0;">📷 Carousel slides:</div><ol style="font-size:0.8rem;">';
+          wu.carousel_slides.forEach(s => { html += `<li>${escapeHtml(s)}</li>`; });
+          html += '</ol>';
+        }
+        // Full text (always present)
+        html += `<div style="background:var(--bg-card);padding:8px;border-radius:8px;font-size:0.8rem;white-space:pre-wrap;max-height:120px;overflow-y:auto;margin-top:4px;">${escapeHtml(wu.full_text)}</div>`;
+        html += '</div>';
+      });
+    } else {
+      Object.entries(pack.captions).forEach(([platform, caption]) => {
+        const icon = platform === 'youtube' ? '📺' : platform === 'instagram' ? '📷' : platform === 'x' ? '🐦' : '👍';
+        html += `<div style="margin:8px 0;">
+          <div style="font-weight:bold;color:var(--accent);font-size:0.85rem;">${icon} ${platform.toUpperCase()}</div>
+          <div style="background:var(--bg-card);padding:8px;border-radius:8px;font-size:0.8rem;white-space:pre-wrap;max-height:120px;overflow-y:auto;">${escapeHtml(caption)}</div>
+        </div>`;
+      });
+    }
     html += '</div>';
     // Hooks
     if (pack.hooks && pack.hooks.length) {
