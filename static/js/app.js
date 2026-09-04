@@ -104,12 +104,27 @@ function renderProviderInfo(providers) {
   const select = document.getElementById("provider");
   const selected = select ? select.value : "";
   const provider = providers.find(p => p.name === selected);
+
+  // Update dropdown options to show configured status + cost
+  if (select) {
+    providers.forEach(p => {
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === p.name) {
+          const status = p.configured ? '✅' : '❌';
+          select.options[i].textContent = `${status} ${p.display_name} (~${p.cost_per_clip}/clip)`;
+        }
+      }
+    });
+  }
+
   if (provider) {
-    container.innerHTML = `<strong>${provider.display_name}</strong>: ${provider.description} |
-      Best for: ${provider.best_for} |
-      Cost: ~${provider.cost_per_clip}/clip |
-      Max: ${provider.max_duration}s ${provider.max_resolution} |
-      Audio: ${provider.supports_native_audio ? 'Yes' : 'No'}`;
+    const configStatus = provider.configured
+      ? '<span style="color:var(--success);">● Configured</span>'
+      : '<span style="color:var(--danger);">● API key needed</span>';
+    container.innerHTML = `<strong>${provider.display_name}</strong> ${configStatus}<br>
+      ${provider.description} |<br>
+      Best for: ${provider.best_for} |<br>
+      Cost: ~${provider.cost_per_clip}/clip | Max: ${provider.max_duration}s ${provider.max_resolution} | Audio: ${provider.supports_native_audio ? 'Yes' : 'No'}`;
   }
 }
 
@@ -122,6 +137,15 @@ document.addEventListener("change", (e) => {
 
 // ═══ Generate Video ════════════════════════════════════════════════
 async function generateVideo() {
+  // Check if selected provider is configured
+  const selectedProvider = document.getElementById("provider").value;
+  const providerInfo = configStatus.video_providers.find(p => p.name === selectedProvider);
+  if (providerInfo && !providerInfo.configured) {
+    const status = document.getElementById("generate-status");
+    status.className = "status-msg error";
+    status.innerHTML = `❌ ${providerInfo.display_name} is not configured. Add the API key in the Settings tab or choose a configured provider. <a href="#" onclick="document.querySelector('.tab-btn[data-tab=\"settings\"]').click(); return false;">Go to Settings →</a>`;
+    return;
+  }
   let prompt = document.getElementById("prompt").value.trim();
   if (!prompt) {
     showMsg("generate-status", "Please enter a prompt.", "error");
