@@ -789,13 +789,80 @@ function showIdeaDetail(data) {
   }
   const promptToUse = data.enhanced_prompt || idea.prompt || "";
   const providerToUse = data.recommended_provider || "veo";
+  const ideaTitle = idea.title || "";
+  const ideaCategory = idea.category || "";
+  const ideaDesc = idea.description || "";
+  const ideaTags = (idea.tags || []).join(',');
+  const ideaScore = data.viral_score ? data.viral_score.total_score : (idea.viral_score || null);
+  html += `<button class="btn btn-secondary idea-content-pack-btn"
+    onclick="loadContentPack('${escapeAttr(ideaTitle)}', '${escapeAttr(ideaCategory)}', '${escapeAttr(ideaDesc)}', '${escapeAttr(ideaTags)}', ${ideaScore || 'null'})"
+    style="width:100%;margin-bottom:8px;">
+    📝 Generate Title + Hashtags + Captions
+  </button>
+  <div id="content-pack-result" class="idea-detail-section"></div>`;
   html += `<button class="btn btn-primary idea-generate-btn"
-    onclick="generateFromIdea('${escapeAttr(promptToUse)}', '${providerToUse}', '${escapeAttr(idea.title || '')}', '${escapeAttr((idea.tags || []).join(','))}')">
+    onclick="generateFromIdea('${escapeAttr(promptToUse)}', '${providerToUse}', '${escapeAttr(ideaTitle)}', '${escapeAttr(ideaTags)}')">
     🎨 Generate This Video →
   </button>`;
   content.innerHTML = html;
   card.classList.remove("hidden");
   card.scrollIntoView({ behavior: "smooth" });
+}
+
+async function loadContentPack(topic, category, description, tags, score) {
+  const container = document.getElementById("content-pack-result");
+  if (!container) return;
+  container.innerHTML = '<span class="spinner"></span> Generating titles & hashtags...';
+  try {
+    const tagList = tags ? tags.split(',').filter(t => t.trim()) : [];
+    const resp = await fetch("/api/content-pack", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        topic, category, description,
+        tags: tagList,
+        platforms: ["youtube", "instagram", "x", "facebook"],
+        viral_score: score,
+      }),
+    });
+    const pack = await resp.json();
+    if (pack.error) {
+      container.innerHTML = `<div class="error">${pack.error}</div>`;
+      return;
+    }
+    let html = '<h3>📋 Content Pack</h3>';
+    // Titles
+    html += '<div class="content-pack-section"><strong>🎬 Viral Titles:</strong><ul>';
+    pack.titles.forEach((t, i) => {
+      html += `<li style="margin:4px 0;"><label><input type="radio" name="title-choice" value="${escapeAttr(t)}" ${i === 0 ? 'checked' : ''} onclick="document.getElementById('post-title').value='${escapeAttr(t)}'"> ${escapeHtml(t)}</label></li>`;
+    });
+    html += '</ul></div>';
+    // Hashtags
+    html += '<div class="content-pack-section"><strong>#️⃣ Hashtags (copy-paste):</strong>';
+    html += `<div class="hashtag-box" style="background:var(--bg-card);padding:8px;border-radius:8px;margin:4px 0;font-size:0.8rem;word-break:break-all;">${escapeHtml(pack.hashtags.copy_paste)}</div>`;
+    html += '</div>';
+    // Platform captions
+    html += '<div class="content-pack-section"><strong>📝 Captions by Platform:</strong>';
+    Object.entries(pack.captions).forEach(([platform, caption]) => {
+      const icon = platform === 'youtube' ? '📺' : platform === 'instagram' ? '📷' : platform === 'x' ? '🐦' : '👍';
+      html += `<div style="margin:8px 0;">
+        <div style="font-weight:bold;color:var(--accent);font-size:0.85rem;">${icon} ${platform.toUpperCase()}</div>
+        <div style="background:var(--bg-card);padding:8px;border-radius:8px;font-size:0.8rem;white-space:pre-wrap;max-height:150px;overflow-y:auto;">${escapeHtml(caption)}</div>
+      </div>`;
+    });
+    html += '</div>';
+    // Hooks
+    if (pack.hooks && pack.hooks.length) {
+      html += '<div class="content-pack-section"><strong>🎣 Hook Variations (first 3 sec):</strong><ul>';
+      pack.hooks.forEach(h => {
+        html += `<li style="margin:4px 0;font-size:0.85rem;">${escapeHtml(h)}</li>`;
+      });
+      html += '</ul></div>';
+    }
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = `<div class="error">Error: ${e.message}</div>`;
+  }
 }
 
 function generateFromIdea(prompt, provider, title, tags) {

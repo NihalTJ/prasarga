@@ -41,6 +41,7 @@ from utils.idea_expander import (
 from utils.social_media_os import (
     send_to_social_os, generate_caption, check_connection as check_social_os,
 )
+from utils.content_pack import generate_content_pack
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = SECRET_KEY
@@ -458,6 +459,35 @@ def api_ncert_generate():
         "platform_recommendations": platform_recs,
         "recommended_provider": recommended_provider,
     })
+
+
+# ─── Content Pack (Titles + Hashtags + Captions) ──────────────────────────────
+
+@app.route("/api/content-pack", methods=["POST"])
+def api_content_pack():
+    """
+    Generate viral titles, hashtags, and platform-specific captions for a video.
+    Can be called before or after video generation.
+    """
+    data = request.json or {}
+    topic = data.get("topic", "").strip()
+    if not topic:
+        return jsonify({"error": "Topic is required"}), 400
+    category = data.get("category", "")
+    description = data.get("description", "")
+    tags = data.get("tags", [])
+    platforms = data.get("platforms", ["youtube", "instagram", "x", "facebook"])
+    viral_score = data.get("viral_score")
+
+    pack = generate_content_pack(
+        topic=topic,
+        category=category,
+        description=description,
+        tags=tags,
+        platforms=platforms,
+        viral_score=viral_score,
+    )
+    return jsonify(pack)
 
 
 # ─── Social Media OS Integration ──────────────────────────────────────────────
