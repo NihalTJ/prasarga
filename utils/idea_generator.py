@@ -16,6 +16,7 @@ Based on 2026 viral content research across Facebook, YouTube Shorts, Instagram 
 import random
 from utils.viral_scorer import score_viral_potential
 from utils.physics_realism import enhance_physics_realism
+from utils.platform_recommender import recommend_platforms, PLATFORM_INFO, MONETIZATION_RANK
 
 # ═══ Content Idea Library ═══════════════════════════════════════════
 
@@ -1634,13 +1635,26 @@ def get_idea_with_analysis(idea_id: str) -> dict:
     # Score viral potential
     score = score_viral_potential(idea["prompt"])
 
-    # Build platform recommendations
+    # Build platform recommendations with full scoring data
+    full_recs = recommend_platforms(
+        prompt=idea.get("prompt", ""),
+        category=idea.get("category", ""),
+        tags=idea.get("tags", []),
+        top_n=4,
+    )
+    # Merge: use full_recs for score/monetization_rank/platform_info,
+    # but keep original reasoning from idea if available
     platform_recs = []
-    for platform in idea["best_platforms"]:
+    for rec in full_recs["rankings"]:
+        platform = rec["platform"]
+        reasoning = idea.get("platform_reasoning", {}).get(platform, rec.get("reasoning", ""))
         platform_recs.append({
             "platform": platform,
-            "reasoning": idea["platform_reasoning"].get(platform, ""),
-            "rank": idea["best_platforms"].index(platform) + 1,
+            "reasoning": reasoning,
+            "rank": rec["rank"],
+            "score": rec["score"],
+            "monetization_rank": rec["monetization_rank"],
+            "platform_info": rec.get("platform_info", {}),
         })
 
     return {

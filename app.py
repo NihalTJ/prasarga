@@ -368,8 +368,34 @@ def api_generate_idea():
     score = score_viral_potential(idea["prompt"])
     idea["prompt"] = enhanced["enhanced_prompt"]
     idea["physics_notes"] = enhanced["physics_notes"]
-    idea["viral_score_detail"] = score
-    return jsonify(idea)
+    # Build full platform recommendations with scores
+    full_recs = recommend_platforms(
+        prompt=idea.get("prompt", ""),
+        category=idea.get("category", ""),
+        tags=idea.get("tags", []),
+        top_n=4,
+    )
+    platform_recs = []
+    for rec in full_recs["rankings"]:
+        platform = rec["platform"]
+        reasoning = idea.get("platform_reasoning", {}).get(platform, rec.get("reasoning", ""))
+        platform_recs.append({
+            "platform": platform,
+            "reasoning": reasoning,
+            "rank": rec["rank"],
+            "score": rec["score"],
+            "monetization_rank": rec["monetization_rank"],
+            "platform_info": rec.get("platform_info", {}),
+        })
+    recommended_provider = "veo" if idea.get("category") in ("Physics", "Chemistry", "Nature") else "minimax"
+    return jsonify({
+        "idea": idea,
+        "enhanced_prompt": enhanced["enhanced_prompt"],
+        "physics_notes": enhanced["physics_notes"],
+        "viral_score": score,
+        "platform_recommendations": platform_recs,
+        "recommended_provider": recommended_provider,
+    })
 
 
 @app.route("/api/generate-ideas-batch", methods=["POST"])
@@ -404,8 +430,34 @@ def api_ncert_generate():
     score = score_viral_potential(idea["prompt"])
     idea["prompt"] = enhanced["enhanced_prompt"]
     idea["physics_notes"] = enhanced["physics_notes"]
-    idea["viral_score_detail"] = score
-    return jsonify(idea)
+    # Build full platform recommendations with scores
+    full_recs = recommend_platforms(
+        prompt=idea.get("prompt", ""),
+        category=idea.get("category", ""),
+        tags=idea.get("tags", []),
+        top_n=4,
+    )
+    platform_recs = []
+    for rec in full_recs["rankings"]:
+        platform = rec["platform"]
+        reasoning = idea.get("platform_reasoning", {}).get(platform, rec.get("reasoning", ""))
+        platform_recs.append({
+            "platform": platform,
+            "reasoning": reasoning,
+            "rank": rec["rank"],
+            "score": rec["score"],
+            "monetization_rank": rec["monetization_rank"],
+            "platform_info": rec.get("platform_info", {}),
+        })
+    recommended_provider = "veo" if "Physics" in idea.get("category", "") or "Chemistry" in idea.get("category", "") else "minimax"
+    return jsonify({
+        "idea": idea,
+        "enhanced_prompt": enhanced["enhanced_prompt"],
+        "physics_notes": enhanced["physics_notes"],
+        "viral_score": score,
+        "platform_recommendations": platform_recs,
+        "recommended_provider": recommended_provider,
+    })
 
 
 # ─── Social Media OS Integration ──────────────────────────────────────────────
